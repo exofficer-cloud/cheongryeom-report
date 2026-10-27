@@ -42,10 +42,10 @@
   <div class="summary"><div class="count" id="resultCount" aria-live="polite">결과 0건</div><div class="muted">신고일자 · 신고유형 · 지역 · 처리상태</div></div>
   <section id="caseCards" class="cards" aria-label="신고 사건 목록"></section>
   <div id="empty" class="empty" hidden>조건에 맞는 신고 사건이 없습니다.</div>
-  <section class="panel" style="margin-top:24px"><h2 style="margin:0 0 6px;font-size:1.2rem">관련 정부 보도자료</h2>
-    <p class="muted" style="margin:0 0 10px">행정안전부 RSS에서 최신 보도자료를 불러옵니다.</p>
+  <section class="panel" style="margin-top:24px"><h2 style="margin:0 0 6px;font-size:1.2rem">한이온 인기 기사</h2>
+    <p class="muted" style="margin:0 0 10px">한이온 인기 기사 RSS에서 최신 항목을 불러옵니다.</p>
     <ul id="rssList" class="rss-list"><li>RSS 피드를 불러오는 중입니다…</li></ul>
-    <p id="rssNote" class="rss-note">RSS 자동 조회가 실패하면 <a href="https://www.korea.kr/rss/dept_mois.xml" target="_blank" rel="noopener noreferrer">행정안전부 공식 RSS</a>를 확인하세요.</p>
+    <p id="rssNote" class="rss-note">RSS 자동 조회가 실패하면 <a href="https://www.hanion.co.kr/rss/clickTop.xml" target="_blank" rel="noopener noreferrer">한이온 RSS</a>를 확인하세요.</p>
   </section>
   <footer>※ 화면에는 신고일자, 신고유형, 지역, 처리상태만 표시합니다. 실제 공개 전에는 원자료의 공개 가능 여부와 비식별 조치 여부를 확인하세요.</footer>
 </main>
@@ -56,7 +56,7 @@ function optionValues(select,values){values.sort((a,b)=>a.localeCompare(b,'ko'))
 function render(){const t=typeFilter.value,s=statusFilter.value,k=keyword.value.trim().toLocaleLowerCase('ko');const filtered=cases.filter(c=>(!t||c['신고유형']===t)&&(!s||c['처리상태']===s)&&(!k||String(c['신고유형']||'').toLocaleLowerCase('ko').includes(k)||String(c['처리상태']||'').toLocaleLowerCase('ko').includes(k)));count.textContent=`결과 ${filtered.length}건`;cards.replaceChildren();filtered.forEach(c=>{const article=document.createElement('article');article.className='case';const top=document.createElement('div');top.className='case-top';const title=document.createElement('div');title.className='type';title.textContent=c['신고유형']||'유형 미상';const st=document.createElement('span');st.className='status'+(c['처리상태']==='처리완료'?' done':(c['처리상태']==='조사중'?' progress':''));st.textContent=c['처리상태']||'상태 미상';top.append(title,st);article.append(top);const dl=document.createElement('dl');[['신고일자',c['신고일자']||'미상'],['지역',c['지역']||'미상'],['처리상태',c['처리상태']||'미상']].forEach(([label,value])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;dl.append(dt,dd);});article.append(dl);cards.append(article);});empty.hidden=filtered.length!==0;}
 fetch('./cases.json').then(r=>{if(!r.ok)throw new Error('사건 데이터 불러오기 실패');return r.json();}).then(data=>{cases=data;optionValues(typeFilter,[...new Set(cases.map(c=>c['신고유형']).filter(Boolean))]);optionValues(statusFilter,[...new Set(cases.map(c=>c['처리상태']).filter(Boolean))]);render();}).catch(()=>{count.textContent='데이터를 불러오지 못했습니다';empty.hidden=false;empty.textContent='사건 데이터 파일(cases.json)을 확인해 주세요.';});
 [typeFilter,statusFilter].forEach(el=>el.addEventListener('change',render));keyword.addEventListener('input',render);
-const rssUrl='https://www.korea.kr/rss/dept_mois.xml',rssList=document.getElementById('rssList');
+const rssUrl='https://www.hanion.co.kr/rss/clickTop.xml',rssList=document.getElementById('rssList');
 fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl)).then(r=>{if(!r.ok)throw new Error('RSS 요청 실패');return r.json();}).then(data=>{const items=(data.items||[]).slice(0,10);if(!items.length)throw new Error('RSS 항목 없음');rssList.replaceChildren();items.forEach(item=>{const li=document.createElement('li'),a=document.createElement('a'),date=document.createElement('span');a.href=item.link||rssUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent=item.title||'제목 없음';date.className='rss-date';const d=item.pubDate?new Date(item.pubDate):null;date.textContent=d&&!isNaN(d)?d.toLocaleDateString('ko-KR'):'날짜 미상';li.append(a,date);rssList.append(li);});document.getElementById('rssNote').textContent='최신 '+items.length+'건 표시 · 원문은 제목을 눌러 확인하세요.';}).catch(()=>{rssList.replaceChildren();const li=document.createElement('li');li.textContent='현재 RSS 자동 조회가 실패했습니다. 공식 RSS 링크를 이용해 주세요.';rssList.append(li);});
 </script>
 </body>
